@@ -1,0 +1,11 @@
+{
+  "name": "rsi-signal",
+  "private": true,
+  "description": "일봉 RSI 주식 매수/매도 시그널",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSI 시그널</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%233182f6'/%3E%3Cpath d='M6 21l6-7 5 5 9-10' stroke='white' stroke-width='3' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="logo" href="./">
+                <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="var(--blue)"/><path d="M6 21l6-7 5 5 9-10" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>RSI 시그널</span>
+            </a>
+            <div class="search">
+                <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <input id="q" type="search" placeholder="종목명 또는 코드 검색 (삼성전자, 005930, AAPL)" autocomplete="off" spellcheck="false">
+                <ul id="suggest" class="suggest" hidden></ul>
+            </div>
+            <button id="openSettings" class="icon-btn" title="RSI 설정" aria-label="RSI 설정">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="17" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="layout">
+        <main class="detail">
+            <div id="error" class="toast" hidden></div>
+
+            <section id="empty" class="panel empty">
+                <p>왼쪽 관심종목을 누르거나 위에서 종목을 검색하세요.</p>
+            </section>
+
+            <div id="stock" hidden>
+                <section class="stock-head">
+                    <div>
+                        <div class="stock-name"><span id="sName"></span><span id="sCode" class="stock-code"></span></div>
+                        <div class="stock-price"><span id="sPrice"></span><span id="sChange" class="change"></span></div>
+                        <div id="sAsof" class="muted small"></div>
+                    </div>
+                    <button id="star" class="star-btn" aria-pressed="false">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8L3.5 9.7l5.9-.9z"/></svg>
+                        <span>관심</span>
+                    </button>
+                </section>
+
+                <section class="panel hero">
+                    <div class="gauge-wrap">
+                        <svg id="gauge" viewBox="0 0 220 128" aria-hidden="true"></svg>
+                        <div class="gauge-label">
+                            <div id="gValue" class="gauge-value"></div>
+                            <div id="gCaption" class="muted small"></div>
+                        </div>
+                    </div>
+                    <div class="verdict">
+                        <div class="muted small">오늘의 판단</div>
+                        <div id="vLabel" class="verdict-label"></div>
+                        <p id="vDetail" class="verdict-detail"></p>
+                        <dl class="facts">
+                            <div><dt>전일 RSI</dt><dd id="fPrev"></dd></div>
+                            <div><dt>매수 기준</dt><dd id="fBuy"></dd></div>
+                            <div><dt>매도 기준</dt><dd id="fSell"></dd></div>
+                        </dl>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-head">
+                        <h2>일봉 차트</h2>
+                        <div id="ranges" class="segmented">
+                            <button data-days="63">3개월</button>
+                            <button data-days="126" class="on">6개월</button>
+                            <button data-days="252">1년</button>
+                            <button data-days="9999">2년</button>
+                        </div>
+                    </div>
+                    <div id="chart" class="chart"></div>
+                    <div class="legend">
+                        <span><i class="tri up"></i>매수 신호</span>
+                        <span><i class="tri down"></i>매도 신호</span>
+                        <span><i class="line rsi"></i>RSI</span>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-head">
+                        <h2>이 규칙대로 매매했다면</h2>
+                        <span class="muted small">최근 2년 · 신호 당일 종가 체결 · 수수료 반영</span>
+                    </div>
+                    <div class="tiles">
+                        <div class="tile"><div class="muted small">전략 수익률</div><div id="btTotal" class="tile-value"></div></div>
+                        <div class="tile"><div class="muted small">그냥 보유했다면</div><div id="btHold" class="tile-value"></div></div>
+                        <div class="tile"><div class="muted small">거래 횟수</div><div id="btCount" class="tile-value"></div></div>
+                        <div class="tile"><div class="muted small">승률</div><div id="btWin" class="tile-value"></div></div>
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>매수</th><th>매도</th><th>보유</th><th>수익률</th></tr></thead>
+                            <tbody id="trades"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+
+        <aside class="panel watch">
+            <div class="panel-head">
+                <h2>관심종목</h2>
+                <button id="refresh" class="text-btn">새로고침</button>
+            </div>
+            <div id="filters" class="chips">
+                <button data-f="ALL" class="on">전체 <b id="cAll">0</b></button>
+                <button data-f="BUY">매수 <b id="cBuy">0</b></button>
+                <button data-f="SELL">매도 <b id="cSell">0</b></button>
+                <button data-f="HOLD">관망 <b id="cHold">0</b></button>
+            </div>
+            <ul id="watch" class="watch-list"></ul>
+            <p id="watchEmpty" class="muted small center" hidden>해당하는 종목이 없습니다.</p>
+        </aside>
+    </div>
+
+    <footer class="foot">
+        RSI(상대강도지수) 하나만 기계적으로 적용한 참고 정보이며 투자 권유가 아닙니다. 시세는 Yahoo Finance 기준이며 지연될 수 있습니다.
+    </footer>
+
+    <dialog id="settings">
+        <form method="dialog" id="settingsForm">
+            <h2>RSI 설정</h2>
+            <label>RSI 기간 <input name="period" type="number" min="2" max="100" required></label>
+            <div class="two">
+                <label>매수 기준 <input name="buy" type="number" min="1" max="99" required></label>
+                <label>매도 기준 <input name="sell" type="number" min="1" max="99" required></label>
+            </div>
+            <label>왕복 수수료·세금 (%) <input name="fee" type="number" min="0" step="0.01" required></label>
+            <label class="check"><input name="closedOnly" type="checkbox"> 장중에는 확정된 전일 봉까지만 사용</label>
+            <p class="muted small">RSI가 매수 기준을 아래에서 위로 돌파하면 매수, 매도 기준을 위에서 아래로 이탈하면 매도로 판단합니다.</p>
+            <div class="dialog-actions">
+                <button type="button" id="resetSettings" class="text-btn">기본값</button>
+                <button value="cancel" formnovalidate class="btn ghost">취소</button>
+                <button value="save" class="btn">저장</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script src="rsi.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
