@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일봉 RSI 매매 신호</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <h1>일봉 RSI 매매 신호</h1>
+        <p class="sub">일봉 종가 기준 RSI로 매수 · 매도 · 관망을 판단합니다.</p>
+    </header>
+
+    <main>
+        <section class="card">
+            <form id="form">
+                <div class="row">
+                    <label>데이터
+                        <select id="source">
+                            <option value="upbit">업비트 (KRW 코인)</option>
+                            <option value="binance">바이낸스 (USDT 코인)</option>
+                            <option value="csv">CSV 파일 (주식 등)</option>
+                        </select>
+                    </label>
+                    <label id="symbolWrap">종목
+                        <input id="symbol" value="KRW-BTC" autocomplete="off" spellcheck="false">
+                    </label>
+                    <label id="csvWrap" hidden>CSV 파일
+                        <input id="csv" type="file" accept=".csv,.txt">
+                    </label>
+                </div>
+                <div class="row">
+                    <label>RSI 기간 <input id="period" type="number" min="2" max="100" value="14"></label>
+                    <label>매수 기준 (이하) <input id="buy" type="number" min="1" max="99" value="30"></label>
+                    <label>매도 기준 (이상) <input id="sell" type="number" min="1" max="99" value="70"></label>
+                    <label>수수료 % <input id="fee" type="number" min="0" step="0.01" value="0.05"></label>
+                </div>
+                <div class="row actions">
+                    <label class="check"><input id="closedOnly" type="checkbox"> 마감된 일봉만 사용 (오늘 진행 중인 봉 제외)</label>
+                    <button type="submit">분석</button>
+                    <button type="button" id="addWatch" class="ghost">관심목록에 추가</button>
+                </div>
+                <p id="hint" class="hint"></p>
+            </form>
+        </section>
+
+        <p id="error" class="error" hidden></p>
+
+        <section id="result" hidden>
+            <div class="card signal">
+                <div>
+                    <div id="name" class="name"></div>
+                    <div id="asof" class="muted"></div>
+                </div>
+                <div class="stats">
+                    <div><span class="muted">종가</span><b id="price"></b></div>
+                    <div><span class="muted">RSI</span><b id="rsiNow"></b></div>
+                    <div><span class="muted">전일 RSI</span><b id="rsiPrev"></b></div>
+                </div>
+                <div id="badge" class="badge"></div>
+                <p id="detail" class="detail"></p>
+            </div>
+
+            <div class="card">
+                <h2>차트</h2>
+                <div id="chart" class="chart"></div>
+                <div class="legend"><span class="m buy"></span>백테스트 매수 <span class="m sell"></span>백테스트 매도</div>
+            </div>
+
+            <div class="card">
+                <h2>백테스트 <small class="muted">RSI가 매수 기준 미만이면 종가 매수, 매도 기준 초과면 종가 매도</small></h2>
+                <div class="stats wide">
+                    <div><span class="muted">전략 수익률</span><b id="btTotal"></b></div>
+                    <div><span class="muted">보유(Buy &amp; Hold)</span><b id="btHold"></b></div>
+                    <div><span class="muted">완료 거래</span><b id="btCount"></b></div>
+                    <div><span class="muted">승률</span><b id="btWin"></b></div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>매수일</th><th>매수가</th><th>매도일</th><th>매도가</th><th>보유일</th><th>수익률</th></tr></thead>
+                        <tbody id="trades"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>관심목록 <button type="button" id="scan" class="ghost small">전체 새로고침</button></h2>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>종목</th><th>종가</th><th>RSI</th><th>신호</th><th></th></tr></thead>
+                    <tbody id="watch"></tbody>
+                </table>
+            </div>
+            <p id="watchEmpty" class="muted">관심목록이 비어 있습니다. 업비트·바이낸스 종목을 추가해 보세요.</p>
+        </section>
+
+        <p class="disclaimer">본 사이트의 신호는 RSI 지표만을 기계적으로 적용한 참고 정보이며 투자 권유가 아닙니다. 투자 판단과 책임은 본인에게 있습니다.</p>
+    </main>
+
+    <script src="rsi.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
